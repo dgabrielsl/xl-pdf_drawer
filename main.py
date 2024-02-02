@@ -146,10 +146,10 @@ class Main(QMainWindow, QWidget):
         try: self.style_options.deleteLater()
         except: pass
 
-        style_sheet = QFileDialog().getOpenFileName(filter='Excel (*.xlsx)')[0]
+        self.style_sheet = QFileDialog().getOpenFileName(filter='Excel (*.xlsx)')[0]
 
-        if style_sheet != '':
-            wb = load_workbook(style_sheet)
+        if self.style_sheet != '':
+            wb = load_workbook(self.style_sheet)
             sheets = wb.sheetnames
 
             self.style_options = QComboBox()
@@ -235,6 +235,10 @@ class Main(QMainWindow, QWidget):
         scroll_wdg = QWidget()
         scroll_lyt = QVBoxLayout()
         scroll_wdg.setLayout(scroll_lyt)
+        scroll_wdg.setMinimumHeight(200)
+        scroll.setMinimumHeight(200)
+
+        self.keep_header_values = []
 
         for i in range(mc):
             i += 1
@@ -243,6 +247,8 @@ class Main(QMainWindow, QWidget):
             hbx = QHBoxLayout()
 
             object = QLabel(f'{ws.cell(1,i).value}:')
+
+            self.keep_header_values.append(f'{ws.cell(1,i).value}')
 
             hbx.addWidget(object)
 
@@ -260,17 +266,6 @@ class Main(QMainWindow, QWidget):
 
         scroll.setWidget(scroll_wdg)
         self.ws2_lyt.addWidget(scroll)
-
-
-
-
-
-
-
-
-
-
-
 
     def step_3(self):
         try: self.ws3.deleteLater()
@@ -335,19 +330,25 @@ class Main(QMainWindow, QWidget):
         self.ws4_lyt.addLayout(wrappers4)
         self.layout_p2.addWidget(self.ws4)
 
-        cbgroup = QVBoxLayout()
+        wg = QWidget()
+        ly = QHBoxLayout()
+        wg.setLayout(ly)
+        sc = QScrollArea()
 
-        for i in range(4):
-            i = 1
-            object = QComboBox()
-            object.addItem(f'No usar')
-            object.addItem(f'Fecha')
-            object.addItem(f'Identificación')
-            object.addItem(f'Nombre completo')
-            object.addItem(f'Edad')
-            cbgroup.addWidget(object)
+        self.collect_all_cb = []
 
-        self.ws4_lyt.addLayout(cbgroup)
+        for i in self.keep_header_values:
+            cbgroup = QComboBox()
+            cbgroup.addItem('No usar')
+
+            for khv in self.keep_header_values:
+                cbgroup.addItem(khv)
+
+            self.collect_all_cb.append(cbgroup)
+            ly.addWidget(cbgroup)
+
+        sc.setWidget(wg)
+        self.ws4_lyt.addWidget(sc)
 
     def step_5(self):
         try: self.ws5.deleteLater()
@@ -386,7 +387,20 @@ class Main(QMainWindow, QWidget):
         self.ws5_lyt.addLayout(pbar_lyt)
 
     def wizzard(self):
-        self.step_6()
+        os.system('cls')
+
+        print(f'From the Excel book:\n>>> {self.style_sheet}')
+        print(f'\nThe style sheet selected is:\n>>> {self.style_options.currentText()}')
+
+        print(f'\n\nrecord_entry_fields:')
+        for elm in self.record_entry_fields:
+            if elm.text() != '': print(elm.text())
+
+        print(f'\n\ncollect_all_cb:')
+        for elm in self.collect_all_cb:
+            if elm.currentText() != 'No usar': print(elm.currentText())
+
+        # self.step_6()
 
     def step_6(self):
         try: self.ws6.deleteLater()
