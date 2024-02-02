@@ -194,18 +194,83 @@ class Main(QMainWindow, QWidget):
         try: self.loaded_data.deleteLater()
         except: pass
 
-        load_size = '25'
-        self.loaded_data = QLabel(f'Datos cargados correctamente ({load_size}).')
-        self.loaded_data.setObjectName('loaded-data')
+        raw_data = QFileDialog().getOpenFileName(filter='Excel (*.xlsx)')[0]
 
-        self.ws2_lyt.addWidget(self.loaded_data)
+        if raw_data != '':
+            displayed_text_path = raw_data
+            displayed_text_path = displayed_text_path.split('/')
+            displayed_text_path = f'../{displayed_text_path[-2]}/{displayed_text_path[-1]}'
+            self.loaded_data = QLabel(displayed_text_path)
+            self.loaded_data.setObjectName('loaded-data')
+            self.loaded_data.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+            self.ws2_lyt.addWidget(self.loaded_data)
+            self.light_2.setText('🟢')
 
-        self.header_row = ['identificacion', 'nombre', 'apellidos', 'edad', 'provincia']
-        self.header_row_matched = ['B3', 'C3', 'D3', 'E3', 'F3']
+            self.build_match_system()
 
-        self.light_2.setText('🟢')
+            self.step_3()
 
-        self.step_3()
+        else:
+            try: self.loaded_data.deleteLater()
+            except: pass
+            self.light_2.setText('🔴')
+
+    def build_match_system(self):
+        self.header_cols = []
+
+        wb = load_workbook(self.loaded_data.text())
+        ws = wb.worksheets[0]
+        mc = ws.max_column
+
+        self.record_entry_fields = []
+
+        l = QLabel('Para cada uno de los campos abajo:')
+        self.ws2_lyt.addWidget(l)
+        l = QLabel('1) Indique la coordenada de la celda (correspondiente a la hoja de estilos cargada) donde se debe escribir el dato, por ejemplo: C3')
+        self.ws2_lyt.addWidget(l)
+        l = QLabel('2) Deje en blanco los campos de los datos que no desea usar.')
+        self.ws2_lyt.addWidget(l)
+
+        scroll = QScrollArea()
+        scroll_wdg = QWidget()
+        scroll_lyt = QVBoxLayout()
+        scroll_wdg.setLayout(scroll_lyt)
+
+        for i in range(mc):
+            i += 1
+            self.header_cols.append(ws.cell(1,i).column_letter)
+
+            hbx = QHBoxLayout()
+
+            object = QLabel(f'{ws.cell(1,i).value}:')
+
+            hbx.addWidget(object)
+
+            object = QLineEdit()
+            object.setFixedWidth(300)
+            object.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+            object.setPlaceholderText(f'{ws.cell(1,i).value.upper()}')
+            object.setStyleSheet('padding: 5px; background: #fff; color: #000; border: 1px solid #000; border-radius: 5px;')
+
+            self.record_entry_fields.append(object)
+
+            hbx.addWidget(object)
+
+            scroll_lyt.addLayout(hbx)
+
+        scroll.setWidget(scroll_wdg)
+        self.ws2_lyt.addWidget(scroll)
+
+
+
+
+
+
+
+
+
+
+
 
     def step_3(self):
         try: self.ws3.deleteLater()
