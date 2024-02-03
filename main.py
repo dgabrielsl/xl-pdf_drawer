@@ -194,10 +194,10 @@ class Main(QMainWindow, QWidget):
         try: self.loaded_data.deleteLater()
         except: pass
 
-        raw_data = QFileDialog().getOpenFileName(filter='Excel (*.xlsx)')[0]
+        self.raw_data = QFileDialog().getOpenFileName(filter='Excel (*.xlsx)')[0]
 
-        if raw_data != '':
-            displayed_text_path = raw_data
+        if self.raw_data != '':
+            displayed_text_path = self.raw_data
             displayed_text_path = displayed_text_path.split('/')
             displayed_text_path = f'../{displayed_text_path[-2]}/{displayed_text_path[-1]}'
             self.loaded_data = QLabel(displayed_text_path)
@@ -388,19 +388,70 @@ class Main(QMainWindow, QWidget):
 
     def wizzard(self):
         os.system('cls')
+        # self.wizzard_readme()
 
-        print(f'From the Excel book:\n>>> {self.style_sheet}')
-        print(f'\nThe style sheet selected is:\n>>> {self.style_options.currentText()}')
+        wb_style = load_workbook(self.style_sheet)
+        wb_data = load_workbook(self.raw_data)
 
-        print(f'\n\nrecord_entry_fields:')
+        wb_style_sheet = wb_style[self.style_options.currentText()]
+        wb_data_sheet = wb_data.active
+
+
+        self.map_column_range = []
+
+        for i in range(wb_data_sheet.max_column):
+            i += 1
+            self.map_column_range.append(wb_data_sheet.cell(1,i).column_letter)
+
+        lm = 1
+        self.data_lake = []
+
+        for ij in range(wb_data_sheet.max_row - 1):
+            lm += 1
+
+            production_line = []
+
+            for kl in self.map_column_range:
+                production_line.append(str(wb_data_sheet[f'{kl}{lm}'].value))
+
+            self.data_lake.append(production_line)
+
+        for h in self.data_lake:
+            print(h)
+
+        collect_all_cb_fltrd = []
+
+        for elm in self.collect_all_cb:
+            if elm.currentText() != 'No usar': collect_all_cb_fltrd.append(elm.currentText())
+
+        print(collect_all_cb_fltrd)
+
+
+
+
+
+
+
+
+        wb_style.close()
+        wb_data.close()
+
+        # self.step_6()
+
+    def wizzard_readme(self):
+        os.system('cls')
+
+        print(f'«style» wb("{self.style_sheet}")')
+        print(f'«style» wb.ws["{self.style_options.currentText()}"]')
+        print(f'«data» wb("{self.raw_data}")')
+
+        print(f'\nrecord_entry_fields:')
         for elm in self.record_entry_fields:
             if elm.text() != '': print(elm.text())
 
-        print(f'\n\ncollect_all_cb:')
+        print(f'\ncollect_all_cb:')
         for elm in self.collect_all_cb:
             if elm.currentText() != 'No usar': print(elm.currentText())
-
-        # self.step_6()
 
     def step_6(self):
         try: self.ws6.deleteLater()
@@ -415,7 +466,7 @@ class Main(QMainWindow, QWidget):
         labels6 = QLabel('Paso 6: Los documentos están listos')
         self.btn_step_6 = QPushButton('aquí')
         self.btn_step_6.setObjectName('btn-step-6')
-        self.btn_step_6.clicked.connect(self.draw)
+        self.btn_step_6.clicked.connect(self.startf)
         self.btn_step_6.setCursor(Qt.CursorShape.PointingHandCursor)
 
         wrappers6 = QHBoxLayout()
@@ -427,7 +478,7 @@ class Main(QMainWindow, QWidget):
         self.ws6_lyt.addLayout(wrappers6)
         self.layout_p2.addWidget(self.ws6)
 
-    def draw(self):
+    def startf(self):
         try: os.startfile(self.path.text())
         except:
             QMessageBox.information(self, 'XL-PDF drawer',
