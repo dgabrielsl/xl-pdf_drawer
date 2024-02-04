@@ -388,6 +388,28 @@ class Main(QMainWindow, QWidget):
 
     def wizzard(self):
         os.system('cls')
+        # self.wizzard_info()
+
+        self.wb_style = load_workbook(self.style_sheet)
+        self.wb_data = load_workbook(self.style_sheet)
+
+        
+
+
+
+
+
+
+
+
+
+
+
+        self.wb_style.close()
+        self.wb_data.close()
+        # self.step_6()
+
+    def wizzard_info(self):
 
         print(f'From the Excel book:\n>>> {self.style_sheet}')
         print(f'\nThe style sheet selected is:\n>>> {self.style_options.currentText()}')
@@ -400,7 +422,6 @@ class Main(QMainWindow, QWidget):
         for elm in self.collect_all_cb:
             if elm.currentText() != 'No usar': print(elm.currentText())
 
-        # self.step_6()
 
     def step_6(self):
         try: self.ws6.deleteLater()
