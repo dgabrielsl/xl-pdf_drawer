@@ -395,19 +395,10 @@ class Main(QMainWindow, QWidget):
         wb_1 = load_workbook(self.style_sheet)
         wb_2 = load_workbook(self.raw_data)
 
-        ws_1 = wb_1[self.style_options.currentText()]
-
-        ws_2 = 0
-
         self.xlpdf()
 
         wb_1.close()
         wb_2.close()
-
-
-        QMessageBox.information(self, 'XL-PDF drawer',
-            f'\nSe ha completado la tarea.\t\n',
-            QMessageBox.StandardButton.Close, QMessageBox.StandardButton.Close)
 
         # self.step_6()
 
@@ -459,7 +450,6 @@ class Main(QMainWindow, QWidget):
         app.Visible = False
 
         wb = app.Workbooks.open(self.style_sheet)
-
         wb.worksheets(self.style_options.currentText()).Activate()
 
         output = r'C:\Users\dgabr\OneDrive\Documentos\Gabriel (cloud)\DeskPyLab\Lab - Projects for sale\XL-PDF drawer\Result - DeskPyLab.pdf'
