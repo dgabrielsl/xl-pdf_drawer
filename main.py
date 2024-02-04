@@ -389,18 +389,35 @@ class Main(QMainWindow, QWidget):
     def wizzard(self):
         os.system('cls')
 
+        wb_1 = load_workbook(self.style_sheet)
+        wb_2 = load_workbook(self.raw_data)
+
+
+
+
+
+
+
+
+
+
+
+
+
+        wb_1.close()
+        wb_2.close()
+
+        # self.step_6()
+
+    def wizzard_support(self):
         print(f'From the Excel book:\n>>> {self.style_sheet}')
         print(f'\nThe style sheet selected is:\n>>> {self.style_options.currentText()}')
-
         print(f'\nrecord_entry_fields:')
         for elm in self.record_entry_fields:
             if elm.text() != '': print(elm.text())
-
         print(f'\ncollect_all_cb:')
         for elm in self.collect_all_cb:
             if elm.currentText() != 'No usar': print(elm.currentText())
-
-        # self.step_6()
 
     def step_6(self):
         try: self.ws6.deleteLater()
