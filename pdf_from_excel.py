@@ -6,6 +6,10 @@ def xlpdf(file_location):
     app.Interactive = False
     app.Visible = False
     wb = app.Workbooks.open(file_location)
+
+    # wb.worksheets('*').Activate()
+    # * >>> name of the sheet to print.
+
     output = r'C:\Users\dgabr\OneDrive\Documentos\Gabriel (cloud)\DeskPyLab\Lab - Projects for sale\XL-PDF drawer\Stylesheet - DeskPyLab.pdf'
     wb.ActiveSheet.ExportAsFixedFormat(0, output)
     wb.Close()
