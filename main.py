@@ -1,5 +1,8 @@
 import os
 import sys
+
+from win32com import client
+
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import Qt
@@ -392,17 +395,11 @@ class Main(QMainWindow, QWidget):
         wb_1 = load_workbook(self.style_sheet)
         wb_2 = load_workbook(self.raw_data)
 
+        ws_1 = wb_1[self.style_options.currentText()]
 
+        ws_2 = 0
 
-
-
-
-
-
-
-
-
-
+        self.xlpdf()
 
         wb_1.close()
         wb_2.close()
@@ -450,6 +447,22 @@ class Main(QMainWindow, QWidget):
             QMessageBox.information(self, 'XL-PDF drawer',
                 f'La ruta:\n\n\t"{self.path.text()}"\t\t\n\nHa sido movida/eliminada o no existe.',
                 QMessageBox.StandardButton.Close, QMessageBox.StandardButton.Close)
+
+    def xlpdf(self):
+        app = client.DispatchEx('Excel.Application')
+        app.Interactive = False
+        app.Visible = False
+
+        wb = app.Workbooks.open(self.style_sheet)
+
+        output = r'C:\Users\dgabr\OneDrive\Documentos\Gabriel (cloud)\DeskPyLab\Lab - Projects for sale\XL-PDF drawer\Result - DeskPyLab.pdf'
+
+        wb.ActiveSheet.ExportAsFixedFormat(0, output)
+        wb.Close()
+
+        try: os.system('taskkill /f /im excel.exe')
+        except Exception as e: print(e)
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
