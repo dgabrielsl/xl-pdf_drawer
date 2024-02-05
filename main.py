@@ -391,12 +391,8 @@ class Main(QMainWindow, QWidget):
 
         self.ws5_lyt.addLayout(pbar_lyt)
 
-        self.auto_filler_assistant()
-
     def wizzard(self):
-        os.system('cls')
-        # try: os.system('taskkill /f /im excel.exe')
-        # except: pass
+        os.system('taskkill /f /im excel.exe')
 
         self.wb_1 = load_workbook(self.style_sheet)
         self.wb_2 = load_workbook(self.raw_data)
@@ -428,7 +424,8 @@ class Main(QMainWindow, QWidget):
 
             for col in range(int(self.ws2.max_column)):
                 col += 1
-                data_block.append(str(self.ws2.cell(row,col).value))
+                if str(self.ws2.cell(row,col).value).strip() != '': data_block.append(str(self.ws2.cell(row,col).value))
+                else: data_block.append('')
 
             self.data_hub.append(data_block)
 
@@ -438,6 +435,7 @@ class Main(QMainWindow, QWidget):
         self.counter = 0
 
         for data_block in self.data_hub:
+            os.system('taskkill /f /im excel.exe')
 
             self.counter += 1
 
@@ -461,6 +459,7 @@ class Main(QMainWindow, QWidget):
 
             saving_dir = self.saving_dir.replace('/','\\')
             self.selected_opts = ' '.join(self.selected_opts)
+            self.selected_opts = self.selected_opts.replace('\\','-').replace('/','-').replace(':','').replace('?','').replace('"','').replace('<','').replace('>','').replace('|','')
             self.output_pdf_name = r'{0}\{1}.pdf'.format(saving_dir,self.selected_opts)
 
             self.xlpdf()
@@ -479,25 +478,6 @@ class Main(QMainWindow, QWidget):
         self.wb_1.close()
 
         self.step_6()
-
-    def auto_filler_assistant(self):
-        self.record_entry_fields[0].setText('A1')
-        self.record_entry_fields[1].setText('B1')
-        self.record_entry_fields[2].setText('C1')
-        self.record_entry_fields[3].setText('A2')
-        self.record_entry_fields[4].setText('B2')
-        self.record_entry_fields[5].setText('C2')
-        self.record_entry_fields[6].setText('A3')
-        self.record_entry_fields[7].setText('B3')
-        self.record_entry_fields[8].setText('C3')
-        self.record_entry_fields[9].setText('A4')
-        self.record_entry_fields[10].setText('B4')
-        self.record_entry_fields[11].setText('C4')
-        self.record_entry_fields[12].setText('D4')
-
-        self.collect_all_cb[0].setCurrentIndex(3)
-        self.collect_all_cb[1].setCurrentIndex(1)
-        self.collect_all_cb[2].setCurrentIndex(9)
 
     def wizzard_support(self):
         print(f'From the Excel book:\n>>> {self.style_sheet}')
@@ -542,8 +522,7 @@ class Main(QMainWindow, QWidget):
                 QMessageBox.StandardButton.Close, QMessageBox.StandardButton.Close)
 
     def xlpdf(self):
-        # try: os.system('taskkill /f /im excel.exe')
-        # except: pass
+        os.system('taskkill /f /im excel.exe')
 
         app = client.DispatchEx('Excel.Application')
         app.Interactive = False
