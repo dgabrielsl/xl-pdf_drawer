@@ -221,7 +221,8 @@ class Main(QMainWindow, QWidget):
     def build_match_system(self):
         self.header_cols = []
 
-        wb = load_workbook(self.loaded_data.text())
+        # wb = load_workbook(self.loaded_data.text())
+        wb = load_workbook(self.raw_data)
         ws = wb.worksheets[0]
         mc = ws.max_column
 
@@ -241,7 +242,8 @@ class Main(QMainWindow, QWidget):
         scroll_wdg.setMinimumHeight(200)
         scroll.setMinimumHeight(200)
 
-        self.keep_header_values = []
+        self.keep_header_meta = {}
+        self.keep_header_meta = dict(self.keep_header_meta)
 
         for i in range(mc):
             i += 1
@@ -251,7 +253,7 @@ class Main(QMainWindow, QWidget):
 
             object = QLabel(f'{ws.cell(1,i).value}:')
 
-            self.keep_header_values.append(f'{ws.cell(1,i).value}')
+            self.keep_header_meta[f'{ws.cell(1,i).value}'] = f'{ws.cell(1,i).column_letter}'
 
             hbx.addWidget(object)
 
@@ -299,16 +301,16 @@ class Main(QMainWindow, QWidget):
         try: self.dirname.deleteLater()
         except: pass
 
-        path = QFileDialog().getExistingDirectory()
+        self.saving_dir = QFileDialog().getExistingDirectory()
 
-        if path == '': path = 'Ruta no definida*'
+        if self.saving_dir == '': self.saving_dir = 'Ruta no definida*'
 
-        self.path = QLabel(path)
+        self.path = QLabel(self.saving_dir)
         self.path.setObjectName('book-path')
         self.path.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         self.ws3_lyt.addWidget(self.path)
 
-        if path != 'Ruta no definida*':
+        if self.saving_dir != 'Ruta no definida*':
             self.light_3.setText('🟢')
             self.step_4()
             self.step_5()
@@ -340,12 +342,12 @@ class Main(QMainWindow, QWidget):
 
         self.collect_all_cb = []
 
-        for i in self.keep_header_values:
+        for i in self.keep_header_meta:
             cbgroup = QComboBox()
             cbgroup.addItem('No usar')
 
-            for khv in self.keep_header_values:
-                cbgroup.addItem(khv)
+            for khm in self.keep_header_meta:
+                cbgroup.addItem(khm)
 
             self.collect_all_cb.append(cbgroup)
             ly.addWidget(cbgroup)
@@ -389,18 +391,105 @@ class Main(QMainWindow, QWidget):
 
         self.ws5_lyt.addLayout(pbar_lyt)
 
+        self.auto_filler_assistant()
+
     def wizzard(self):
         os.system('cls')
+        # try: os.system('taskkill /f /im excel.exe')
+        # except: pass
 
-        wb_1 = load_workbook(self.style_sheet)
-        wb_2 = load_workbook(self.raw_data)
+        self.wb_1 = load_workbook(self.style_sheet)
+        self.wb_2 = load_workbook(self.raw_data)
+
+        self.record_entry_fields_txt = []
+        self.collect_all_cb_txt = []
+
+        for ref in self.record_entry_fields:
+            if ref.text().strip() != '': self.record_entry_fields_txt.append(ref.text().upper())
+            else: self.record_entry_fields_txt.append(False)
+
+        for ref in self.collect_all_cb:
+            if ref.currentText() != 'No usar': self.collect_all_cb_txt.append(ref.currentText())
+
+        self.file_outputname_req_coords = []
+
+        for x in self.collect_all_cb_txt:
+            if x in self.keep_header_meta: self.file_outputname_req_coords.append(self.keep_header_meta[x])
+
+        self.ws1 = self.wb_1[self.style_options.currentText()]
+
+        self.data_hub = []
+
+        self.ws2 = self.wb_2.active
+
+        for row in range(int(self.ws2.max_row)):
+            row += 1
+            data_block = []
+
+            for col in range(int(self.ws2.max_column)):
+                col += 1
+                data_block.append(str(self.ws2.cell(row,col).value))
+
+            self.data_hub.append(data_block)
+
+        self.data_hub.pop(0)
+
+        y_length = len(self.record_entry_fields_txt)
+
+        selected_opts = 'New name'
+        saving_dir = self.saving_dir.replace('/','\\')
+
+        self.output_pdf_name = r'{0}\{1}.pdf'.format(saving_dir,selected_opts)
+
+        for data_block in self.data_hub:
+            for ij in range(y_length):
+                x = self.record_entry_fields_txt[ij]
+                if self.record_entry_fields_txt[ij] != False: self.ws1[self.record_entry_fields_txt[ij]].value = data_block[ij]
+
+        self.wb_1.save(self.style_sheet)
+        self.wb_1.close()
+
+        # print(self.keep_header_meta)
+        # print(self.collect_all_cb_txt)
+
+        # for i in self.collect_all_cb_txt:
+        #     print(self.keep_header_meta[i])
 
         self.xlpdf()
 
-        wb_1.close()
-        wb_2.close()
+        self.wb_2.close()
 
-        # self.step_6()
+        for data_block in self.data_hub:
+            for ij in range(y_length):
+                x = self.record_entry_fields_txt[ij]
+
+                if self.record_entry_fields_txt[ij] != False:
+                    try: self.ws1[self.record_entry_fields_txt[ij]].value = ''
+                    except Exception as e: pass
+
+        self.wb_1.save(self.style_sheet)
+        self.wb_1.close()
+
+        self.step_6()
+
+    def auto_filler_assistant(self):
+        self.record_entry_fields[0].setText('A1')
+        self.record_entry_fields[1].setText('B1')
+        self.record_entry_fields[2].setText('C1')
+        self.record_entry_fields[3].setText('A2')
+        self.record_entry_fields[4].setText('B2')
+        self.record_entry_fields[5].setText('C2')
+        self.record_entry_fields[6].setText('A3')
+        self.record_entry_fields[7].setText('B3')
+        self.record_entry_fields[8].setText('C3')
+        self.record_entry_fields[9].setText('A4')
+        self.record_entry_fields[10].setText('B4')
+        self.record_entry_fields[11].setText('C4')
+        self.record_entry_fields[12].setText('D4')
+
+        self.collect_all_cb[0].setCurrentIndex(3)
+        self.collect_all_cb[1].setCurrentIndex(1)
+        self.collect_all_cb[2].setCurrentIndex(9)
 
     def wizzard_support(self):
         print(f'From the Excel book:\n>>> {self.style_sheet}')
@@ -445,6 +534,9 @@ class Main(QMainWindow, QWidget):
                 QMessageBox.StandardButton.Close, QMessageBox.StandardButton.Close)
 
     def xlpdf(self):
+        # try: os.system('taskkill /f /im excel.exe')
+        # except: pass
+
         app = client.DispatchEx('Excel.Application')
         app.Interactive = False
         app.Visible = False
@@ -452,12 +544,8 @@ class Main(QMainWindow, QWidget):
         wb = app.Workbooks.open(self.style_sheet)
         wb.worksheets(self.style_options.currentText()).Activate()
 
-        output = r'C:\Users\dgabr\OneDrive\Documentos\Gabriel (cloud)\DeskPyLab\Lab - Projects for sale\XL-PDF drawer\Result - DeskPyLab.pdf'
-
-        wb.ActiveSheet.ExportAsFixedFormat(0, output)
+        wb.ActiveSheet.ExportAsFixedFormat(0, self.output_pdf_name)
         wb.Close()
-
-        os.system('taskkill /f /im excel.exe')
 
 
 if __name__ == '__main__':
