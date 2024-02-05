@@ -435,29 +435,37 @@ class Main(QMainWindow, QWidget):
         self.data_hub.pop(0)
 
         y_length = len(self.record_entry_fields_txt)
-
-        selected_opts = 'New name'
-        saving_dir = self.saving_dir.replace('/','\\')
-
-        self.output_pdf_name = r'{0}\{1}.pdf'.format(saving_dir,selected_opts)
+        self.counter = 0
 
         for data_block in self.data_hub:
+
+            self.counter += 1
+
+            self.record = []
+
             for ij in range(y_length):
                 x = self.record_entry_fields_txt[ij]
                 if self.record_entry_fields_txt[ij] != False: self.ws1[self.record_entry_fields_txt[ij]].value = data_block[ij]
 
-        self.wb_1.save(self.style_sheet)
-        self.wb_1.close()
+                self.record.append(data_block[ij])
 
-        # print(self.keep_header_meta)
-        # print(self.collect_all_cb_txt)
+            self.wb_1.save(self.style_sheet)
+            self.wb_1.close()
 
-        # for i in self.collect_all_cb_txt:
-        #     print(self.keep_header_meta[i])
+            onlykeys = list(self.keep_header_meta.keys())
 
-        self.xlpdf()
+            self.selected_opts = []
 
-        self.wb_2.close()
+            for item in self.collect_all_cb_txt:
+                if item in onlykeys: self.selected_opts.append(self.record[onlykeys.index(item)])
+
+            saving_dir = self.saving_dir.replace('/','\\')
+            self.selected_opts = ' '.join(self.selected_opts)
+            self.output_pdf_name = r'{0}\{1}.pdf'.format(saving_dir,self.selected_opts)
+
+            self.xlpdf()
+
+            self.wb_2.close()
 
         for data_block in self.data_hub:
             for ij in range(y_length):
