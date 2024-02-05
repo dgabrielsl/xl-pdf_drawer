@@ -392,7 +392,7 @@ class Main(QMainWindow, QWidget):
         self.ws5_lyt.addLayout(pbar_lyt)
 
     def wizzard(self):
-        os.system('taskkill /f /im excel.exe')
+        # os.system('taskkill /f /im excel.exe')
 
         self.wb_1 = load_workbook(self.style_sheet)
         self.wb_2 = load_workbook(self.raw_data)
@@ -515,7 +515,7 @@ class Main(QMainWindow, QWidget):
                 QMessageBox.StandardButton.Close, QMessageBox.StandardButton.Close)
 
     def xlpdf(self):
-        os.system('taskkill /f /im excel.exe')
+        # os.system('taskkill /f /im excel.exe')
 
         app = client.DispatchEx('Excel.Application')
         app.Interactive = False
