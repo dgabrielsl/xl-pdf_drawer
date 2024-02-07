@@ -2,7 +2,7 @@ import os
 import sys
 
 from win32com import client
-
+import webbrowser
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import Qt
@@ -113,13 +113,20 @@ class Main(QMainWindow, QWidget):
         self.centralwidget.setLayout(self.stackedlayout)
         self.setCentralWidget(self.centralwidget)
 
-        # Auto-login.
-        self.code_listener.setText('159357')
-        self.get_logged.click()
-
     def user_auth(self):
         code_listener = self.code_listener.text()
+
         if code_listener == '159357': self.stackedlayout.setCurrentIndex(1)
+        else:
+            msg = QMessageBox(self)
+            msg.setWindowTitle('XL-PDF drawer')
+            msg.setText('\nEl código es incorrecto, por favor intente de nuevo.\t\n')
+
+            msg.addButton(QMessageBox.StandardButton.Close)
+
+            msg.setDetailedText(f'Código ingresado: {self.code_listener.text()}\n\nPuede solicitar más información al correo: dgabrielsolo@gmail.com\n\nEsta aplicación fue desarrollada por DeskPyL.')
+
+            msg.show()
 
     def step_1(self):
         try: self.ws1.deleteLater()
@@ -210,13 +217,9 @@ class Main(QMainWindow, QWidget):
             self.light_2.setText('🟢')
 
             self.build_match_system()
-
             self.step_3()
 
-        else:
-            try: self.loaded_data.deleteLater()
-            except: pass
-            self.light_2.setText('🔴')
+        else: self.light_2.setText('🔴')
 
     def build_match_system(self):
         self.header_cols = []
@@ -235,10 +238,10 @@ class Main(QMainWindow, QWidget):
         self.ws2_lyt.addWidget(l)
 
         scroll = QScrollArea()
-        scroll_wdg = QWidget()
+        self.scroll_wdg = QWidget()
         scroll_lyt = QVBoxLayout()
-        scroll_wdg.setLayout(scroll_lyt)
-        scroll_wdg.setMinimumHeight(200)
+        self.scroll_wdg.setLayout(scroll_lyt)
+        self.scroll_wdg.setMinimumHeight(200)
         scroll.setMinimumHeight(200)
 
         self.keep_header_meta = {}
@@ -268,7 +271,7 @@ class Main(QMainWindow, QWidget):
 
             scroll_lyt.addLayout(hbx)
 
-        scroll.setWidget(scroll_wdg)
+        scroll.setWidget(self.scroll_wdg)
         self.ws2_lyt.addWidget(scroll)
 
         wb.close()
@@ -336,9 +339,9 @@ class Main(QMainWindow, QWidget):
         self.ws4_lyt.addLayout(wrappers4)
         self.layout_p2.addWidget(self.ws4)
 
-        wg = QWidget()
+        self.wg = QWidget()
         ly = QHBoxLayout()
-        wg.setLayout(ly)
+        self.wg.setLayout(ly)
         sc = QScrollArea()
 
         self.collect_all_cb = []
@@ -353,7 +356,7 @@ class Main(QMainWindow, QWidget):
             self.collect_all_cb.append(cbgroup)
             ly.addWidget(cbgroup)
 
-        sc.setWidget(wg)
+        sc.setWidget(self.wg)
         self.ws4_lyt.addWidget(sc)
 
     def step_5(self):
@@ -380,17 +383,6 @@ class Main(QMainWindow, QWidget):
 
         self.ws5_lyt.addLayout(wrappers5)
         self.layout_p2.addWidget(self.ws5)
-
-        self.pbar = QProgressBar()
-        self.pbar.setMaximumWidth(300)
-        self.pbar.setValue(85)
-        self.pbar.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-
-        pbar_lyt = QHBoxLayout()
-        pbar_lyt.addWidget(self.pbar)
-        pbar_lyt.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-
-        self.ws5_lyt.addLayout(pbar_lyt)
 
     def wizzard(self):
         os.system('taskkill /f /im excel.exe')
@@ -484,9 +476,11 @@ class Main(QMainWindow, QWidget):
         self.wb_1.save(self.style_sheet)
         self.wb_1.close()
 
+        self.btn_step_5.setDisabled(True)
         self.step_6()
 
     def step_6(self):
+
         try: self.ws6.deleteLater()
         except: pass
 
@@ -537,13 +531,6 @@ if __name__ == '__main__':
             background: #19002d;
             color: #fff;
             font-size: 13px;
-        }
-        QProgressBar{
-            padding: 5px;
-            background: #df00ff;
-            color: #000;
-            border: none;
-            border-radius: 5px;
         }
         #p1-h1, #p2-h1{
             font-size: 35px;
