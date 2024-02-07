@@ -221,7 +221,6 @@ class Main(QMainWindow, QWidget):
     def build_match_system(self):
         self.header_cols = []
 
-        # wb = load_workbook(self.loaded_data.text())
         wb = load_workbook(self.raw_data)
         ws = wb.worksheets[0]
         mc = ws.max_column
@@ -357,8 +356,6 @@ class Main(QMainWindow, QWidget):
         sc.setWidget(wg)
         self.ws4_lyt.addWidget(sc)
 
-        self.auto_pilot()
-
     def step_5(self):
         try: self.ws5.deleteLater()
         except: pass
@@ -446,14 +443,10 @@ class Main(QMainWindow, QWidget):
 
                 for ij in range(y_length):
                     x = self.record_entry_fields_txt[ij]
-                    if self.record_entry_fields_txt[ij] != False:
-                        if data_block[ij] != None or data_block[ij] != 'None': self.ws1[self.record_entry_fields_txt[ij]].value = data_block[ij]
-                        else: self.ws1[self.record_entry_fields_txt[ij]].value = ' '
+
+                    if self.record_entry_fields_txt[ij] != False and data_block[ij] != 'None': self.ws1[self.record_entry_fields_txt[ij]].value = data_block[ij]
 
                     self.record.append(data_block[ij])
-
-                try: self.wb_1.save(self.style_sheet)
-                except Exception as e: print(e)
 
                 try: self.wb_1.save(self.style_sheet)
                 except Exception as e: print(e)
@@ -492,24 +485,6 @@ class Main(QMainWindow, QWidget):
         self.wb_1.close()
 
         self.step_6()
-
-    def auto_pilot(self):
-        self.record_entry_fields[0].setText('B20')
-        self.record_entry_fields[1].setText('L20')
-        self.record_entry_fields[2].setText('D41')
-        self.record_entry_fields[3].setText('J25')
-        self.record_entry_fields[4].setText('B25')
-        self.record_entry_fields[5].setText('F25')
-        self.record_entry_fields[6].setText('D28')
-        self.record_entry_fields[7].setText('D30')
-        self.record_entry_fields[8].setText('G20')
-        self.record_entry_fields[9].setText('B37')
-        self.record_entry_fields[10].setText('B35')
-        self.record_entry_fields[11].setText('B39')
-        self.record_entry_fields[12].setText('J16')
-
-        self.collect_all_cb[0].setCurrentIndex(1)
-        self.collect_all_cb[1].setCurrentIndex(3)
 
     def step_6(self):
         try: self.ws6.deleteLater()
