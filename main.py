@@ -272,6 +272,8 @@ class Main(QMainWindow, QWidget):
         scroll.setWidget(scroll_wdg)
         self.ws2_lyt.addWidget(scroll)
 
+        wb.close()
+
     def step_3(self):
         try: self.ws3.deleteLater()
         except: pass
@@ -355,6 +357,8 @@ class Main(QMainWindow, QWidget):
         sc.setWidget(wg)
         self.ws4_lyt.addWidget(sc)
 
+        self.auto_pilot()
+
     def step_5(self):
         try: self.ws5.deleteLater()
         except: pass
@@ -392,7 +396,7 @@ class Main(QMainWindow, QWidget):
         self.ws5_lyt.addLayout(pbar_lyt)
 
     def wizzard(self):
-        # os.system('taskkill /f /im excel.exe')
+        os.system('taskkill /f /im excel.exe')
 
         self.wb_1 = load_workbook(self.style_sheet)
         self.wb_2 = load_workbook(self.raw_data)
@@ -435,52 +439,77 @@ class Main(QMainWindow, QWidget):
         self.counter = 0
 
         for data_block in self.data_hub:
-            os.system('taskkill /f /im excel.exe')
+            try:
+                self.counter += 1
 
-            self.counter += 1
+                self.record = []
 
-            self.record = []
+                for ij in range(y_length):
+                    x = self.record_entry_fields_txt[ij]
+                    if self.record_entry_fields_txt[ij] != False:
+                        if data_block[ij] != None or data_block[ij] != 'None': self.ws1[self.record_entry_fields_txt[ij]].value = data_block[ij]
+                        else: self.ws1[self.record_entry_fields_txt[ij]].value = ' '
 
-            for ij in range(y_length):
-                x = self.record_entry_fields_txt[ij]
-                if self.record_entry_fields_txt[ij] != False: self.ws1[self.record_entry_fields_txt[ij]].value = data_block[ij]
+                    self.record.append(data_block[ij])
 
-                self.record.append(data_block[ij])
+                try: self.wb_1.save(self.style_sheet)
+                except Exception as e: print(e)
 
-            self.wb_1.save(self.style_sheet)
-            self.wb_1.close()
+                try: self.wb_1.save(self.style_sheet)
+                except Exception as e: print(e)
 
-            onlykeys = list(self.keep_header_meta.keys())
+                self.wb_1.close()
 
-            self.selected_opts = []
+                onlykeys = list(self.keep_header_meta.keys())
 
-            for item in self.collect_all_cb_txt:
-                if item in onlykeys: self.selected_opts.append(self.record[onlykeys.index(item)])
+                self.selected_opts = []
 
-            saving_dir = self.saving_dir.replace('/','\\')
-            self.selected_opts = ' '.join(self.selected_opts)
-            self.selected_opts = self.selected_opts.replace('\\','-').replace('/','-').replace(':','').replace('?','').replace('"','').replace('<','').replace('>','').replace('|','')
-            self.output_pdf_name = r'{0}\{1}.pdf'.format(saving_dir,self.selected_opts)
+                for item in self.collect_all_cb_txt:
+                    if item in onlykeys: self.selected_opts.append(self.record[onlykeys.index(item)])
 
-            try: self.xlpdf()
-            except Exception as e:
-                QMessageBox.information(self, 'XL-PDF drawer',
-                    f'\n{e}\t\n',
-                    QMessageBox.StandardButton.Close, QMessageBox.StandardButton.Close)
+                saving_dir = self.saving_dir.replace('/','\\')
+
+                self.selected_opts = ' '.join(self.selected_opts)
+                self.selected_opts = self.selected_opts.replace('\\','-').replace('/','-').replace(':','').replace('?','').replace('"','').replace('<','').replace('>','').replace('|','')
+                self.selected_opts = self.selected_opts.replace('\t','').replace('\v','')
+                self.output_pdf_name = r'{0}\{1}.pdf'.format(saving_dir,self.selected_opts)
+
+                self.xlpdf()
+
                 self.wb_2.close()
 
-        for data_block in self.data_hub:
-            for ij in range(y_length):
-                x = self.record_entry_fields_txt[ij]
+                for data_block in self.data_hub:
+                    for ij in range(y_length):
+                        x = self.record_entry_fields_txt[ij]
 
-                if self.record_entry_fields_txt[ij] != False:
-                    try: self.ws1[self.record_entry_fields_txt[ij]].value = ''
-                    except Exception as e: pass
+                        if self.record_entry_fields_txt[ij] != False:
+                            try: self.ws1[self.record_entry_fields_txt[ij]].value = ''
+                            except Exception as e: pass
+
+            except Exception as e: print(f'for data_block in self.data_hub / {e}')
 
         self.wb_1.save(self.style_sheet)
         self.wb_1.close()
 
         self.step_6()
+
+    def auto_pilot(self):
+        self.record_entry_fields[0].setText('B20')
+        self.record_entry_fields[1].setText('L20')
+        self.record_entry_fields[2].setText('D41')
+        self.record_entry_fields[3].setText('J25')
+        self.record_entry_fields[4].setText('B25')
+        self.record_entry_fields[5].setText('F25')
+        self.record_entry_fields[6].setText('D28')
+        self.record_entry_fields[7].setText('D30')
+        self.record_entry_fields[8].setText('G20')
+        self.record_entry_fields[9].setText('B37')
+        self.record_entry_fields[10].setText('B35')
+        self.record_entry_fields[11].setText('B39')
+        self.record_entry_fields[12].setText('J16')
+
+        self.collect_all_cb[0].setCurrentIndex(1)
+        self.collect_all_cb[1].setCurrentIndex(3)
 
     def step_6(self):
         try: self.ws6.deleteLater()
@@ -515,18 +544,16 @@ class Main(QMainWindow, QWidget):
                 QMessageBox.StandardButton.Close, QMessageBox.StandardButton.Close)
 
     def xlpdf(self):
-        # os.system('taskkill /f /im excel.exe')
-
         app = client.DispatchEx('Excel.Application')
         app.Interactive = False
         app.Visible = False
 
-        wb = app.Workbooks.open(self.style_sheet)
-        wb.worksheets(self.style_options.currentText()).Activate()
+        self.wb_app = app.Workbooks.open(self.style_sheet)
+        self.wb_app.worksheets(self.style_options.currentText()).Activate()
 
-        wb.ActiveSheet.ExportAsFixedFormat(0, self.output_pdf_name)
-        wb.Close()
+        self.wb_app.ActiveSheet.ExportAsFixedFormat(0, self.output_pdf_name)
 
+        self.wb_app.Close()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
